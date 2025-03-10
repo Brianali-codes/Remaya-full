@@ -1,0 +1,639 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playwrite+AU+SA:wght@100..400&display=swap');
+/* Default navbar styles */
+.custom-navbar {
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: white;
+  height: auto; /* Default height */
+  width: 100%;
+}
+#signup-bg{
+  background-image: url(assets/kid2.webp);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+#signup-bg1{
+  background:  rgba(255, 255, 255, 0.9);
+  width: 100%;
+  height: 100%;
+}
+/* Show navbar when scrolling up */
+.show-navbar {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Hide navbar when scrolling down */
+.hide-navbar {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+.btn{
+  font-family: "Nunito", serif;
+}
+
+#LP {
+  background:  rgba(255, 255, 255, 0.85);
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.btn2{
+  color: rgb(255, 255, 255);
+  font-family: "Nunito", serif;
+  background-color: rgb(67, 67, 253);
+  padding: 10px;
+  border-radius: 15px;
+}
+.btn2:hover{
+  background-color: rgb(158, 158, 253);
+}
+
+#MAIN1 {
+  background-image: url(assets/image3.webp);
+  height: fit-content;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+#MAIN2 {
+  background-image: url(assets/charity.webp);
+  height: fit-content;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+#LP2 {
+  background:  rgba(83, 83, 255, 0.9);
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.desc{
+  font-family: "Nunito", serif;
+}
+.support-btn {
+  padding: 25px;
+  border-radius: 35px;
+  background: linear-gradient(45deg, rgb(67, 67, 253), rgb(46, 46, 200));
+  font-weight: bold;
+  font-family: "Nunito", serif;
+  transition: all 0.3s ease-in-out;
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0px 4px 10px rgba(67, 67, 253, 0.3);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.support-btn:hover {
+  animation: jelly 0.4s ease-in-out;
+  background: linear-gradient(45deg, rgb(46, 46, 200), rgb(67, 67, 253));
+  box-shadow: 0px 6px 15px rgba(67, 67, 253, 0.5);
+}
+
+@keyframes jelly {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.15, 0.85); }
+  50% { transform: scale(0.85, 1.15); }
+  70% { transform: scale(1.05, 0.95); }
+  100% { transform: scale(1, 1); }
+}
+
+.support-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 10%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s ease-out;
+}
+
+.support-btn:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.support-btn svg {
+  transition: transform 0.3s ease-in-out, rotate 0.3s ease-in-out;
+}
+
+.support-btn:hover svg {
+  transform: translateX(5px) rotate(10deg);
+  animation: bounce 0.4s infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateX(5px) rotate(10deg); }
+  100% { transform: translateX(7px) rotate(-10deg); }
+}
+
+.support-btn2{
+  padding: 16px;
+  border-radius: 35px;
+  background-color: rgb(67, 67, 253);
+  font-weight: bold;
+  font-family: "Nunito", serif;
+  transition: 0.5s;
+  color: white;
+}
+.support-btn3{
+  padding: 16px;
+  border-radius: 35px;
+  background-color:white ;
+  font-weight: bold;
+  font-family: "Nunito", serif;
+  transition: 0.5s;
+  border: 1px solid black;
+  color: rgb(67, 67, 253);
+}
+
+.support-btn:hover, .support-btn2:hover, .support-btn3:hover{
+  background-color:rgb(158, 158, 253);
+  transition: 0.5s;
+  color: white;
+}
+@keyframes grow{
+  0%{width:20%;}
+  100%{width: 100%;}
+}
+.project-container{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+  height: fit-content;
+
+}
+
+.project-img{
+  width: 300px;
+}
+.mission-img{
+  width: 500px;
+  border-radius: 50px;
+}
+#mv{
+  padding: 30px;
+}
+.scrollertext{
+  color: rgb(67, 67, 253);
+}
+.project-main{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1)) ;
+    height: 100vh;
+}
+
+.cards{
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  
+}
+
+
+.vertical-line {
+  width: 2px;
+  height: 64vh;
+  background-color: rgb(150, 150, 150);
+}
+
+.horizontal-line {
+  width: 50vw;
+  height: 2px;
+  background-color: rgb(150, 150, 150);
+  
+}
+
+.circle {
+  width: 15px;
+  height: 15px;
+  background-color: rgb(150, 150, 150);
+  border-radius: 50%;
+  margin-top: -5px; /* Adjust to overlap slightly with the line */
+}
+
+.vertical-line2 {
+  width: 2px;
+  height: 10vh;
+  background-color: rgb(150, 150, 150);
+}
+.contacts{
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  padding: 30px;
+  background-color: rgb(156, 156, 156) ;
+  height: 50vh;
+}
+#foot{
+  background-color: rgb(156, 156, 156);
+}
+#email-input{
+  border-radius: 20px;
+  width: 80%;
+  border: 1px solid gray;
+  padding: 7px;
+}
+.subscribe-button{
+  border-radius: 20px;
+  font-size: 18px;
+  color: white;
+  padding: 7px;
+  background-color: rgb(67, 67, 253);
+  width: 80%;
+  transition: 0.5s;
+}
+.subscribe-button:hover{
+  background-color: rgb(158, 158, 253);
+  transition: 0.5s;
+}
+.Home-img:hover{
+  scale: 1.04;
+  transition: 0.4s;
+}
+.Home-img{
+  transition: 0.4s;
+  cursor: pointer;
+}
+#menu{
+  display: none;
+}
+
+.sidebarOn {
+  width: 60%;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateX(0); /* Sidebar slides in */
+  opacity: 1;
+  visibility: visible;
+  transition: transform 0.5s ease, opacity 1s ease, visibility 1s ease; /* Smooth transition */
+  gap: 10px;
+}
+
+/* Sidebar closed state */
+.sidebarOff {
+  width: 60%;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateX(-100%); /* Sidebar slides out */
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.5s ease, opacity 1s ease, visibility 1s ease; /* Smooth transition */
+  gap: 10px;
+}
+#NAV2{
+  background-color: transparent !important;
+  backdrop-filter: blur(40px) !important;
+}
+#donation-container{
+  height: 120vh;
+}
+.rb-btn{
+  background-color: rgb(255, 255, 255);
+  padding: 20px;
+  transition: 0.6s;
+  border-radius: 20px;
+}
+.rb-btn:hover{
+  background-color: rgb(67, 64, 255);
+}
+@media (max-width:768px){
+    .custom-navbar{
+      height: 10px !important;
+      min-height: 0 !important; /* Reset any min-height */
+      padding: 0; /* Ensure no padding interferes */
+      width: 100%;
+      background-color: transparent;
+      backdrop-filter: blur(30px);
+    }
+    #blog-container{
+      flex-direction:column !important;
+      width: 100% !important;
+    }
+    #blog-container div{
+      width: 100% !important;
+    }
+    #mv{
+      padding: 25px !important;
+    }
+    #Blog{
+      padding: 25px !important;
+    }
+    
+    #line2{
+      display: none;
+    }
+    #int-line{
+      display: none;
+    }
+    #container2{
+      width: 300px !important;
+    }
+    #donation-container2{
+      flex-direction: column !important;
+      height: 500px;
+      width: 300px !important;
+    }
+    #donation-container{
+      flex-direction: column !important;
+      height: fit-content;
+      margin-top: 150px;
+    }
+    #main-donate{
+      flex-direction: column !important;
+      gap: 20px !important;
+    }
+    .doncont{
+      width: 100%;
+    }
+    .donation-box{
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .nav-links{
+      display: none;
+    }
+    .socials{
+      display: none;
+    }
+    .vertical-line2{
+      display: none;
+    }
+    .circle{
+      display: none;
+    }
+    .sp2{
+      display: none;
+    }
+    #hero-section{
+      margin-top: 20px;
+      flex-direction: column !important;
+      height: fit-content;
+    }
+    .home-desc{
+      width: 100%;
+    }
+    .project-container{
+      display: flex;
+      flex-direction: column;
+    }
+    #abd{
+      display: flex;
+      flex-direction: column !important;
+      height: fit-content;
+      padding: 25px;
+    }
+    .abd-desc{
+      width: 100%;
+      height: fit-content;
+    }
+    .support-btn{
+      font-size: 12px;
+    }
+    #LP{
+      height: fit-content;
+    }
+    #mission{
+      display: flex;
+      flex-direction: column !important;
+      height: fit-content;
+    }
+    .vertical-line{
+      display: none;
+    }
+    #MAIN2{
+      
+      height: fit-content;
+    }
+    #LP2{
+      height: fit-content;
+      padding: 20px;
+    }
+    #projects{
+      height: fit-content;
+    }
+    .circle{
+      display: none;
+    }
+    .text2{
+      font-size: 20px;
+      text-align: center;
+    }
+    #menu{
+      display: block;
+    }
+    #location-img{
+      display: none;
+    }
+    #location-img2{
+      display: none;
+    }
+    .abt-red{
+      display: none;
+    }
+    #logo{
+      width: 50px;
+    }
+    .home-desc{
+      font-size: 18px;
+    }
+    .title{
+      font-size: 20px;
+    }
+    .contacts{
+      display: flex;
+      flex-direction: column;
+      height: fit-content;
+    }
+    .Home-img{
+      width: 300px;
+    }
+   
+}
+.donation-box{
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  padding: 20px;
+  gap: 20px;
+}
+.don-btn{
+  border: 1px black solid;
+  padding: 20px;
+  border-radius: 25px;
+  transition: 0.6s;
+  width: 200px;
+  font-family: "Nunito", serif;
+  font-weight: bold;
+}
+.don-btn2{
+  border: 1px black solid;
+  padding: 20px;
+  border-radius: 25px;
+  transition: 0.6s;
+  width: 200px;
+  font-family: "Nunito", serif;
+  font-weight: bold;
+  background-color: rgb(158, 158, 253);
+}
+.don-btn:hover{
+  background-color: rgb(158, 158, 253);
+  transition: 0.6s;
+}
+.don-input{
+  border: 1px black solid;
+  padding: 20px;
+  border-radius: 25px;
+  transition: 0.6s;
+  width: 200px;
+  font-weight: bold;
+}
+.menu-wrap {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.menu__item {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 -1px #000000;
+}
+
+.menu__item-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #000000;
+  font-size: 4vh;
+}
+
+.menu__item-link:hover {
+  color: #060606;
+}
+
+.menu__item-link:focus:not(:focus-visible) {
+  color: #fff;
+}
+
+.marquee {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-color: rgb(67, 67, 253);
+  transform: translate3d(0, 101%, 0);
+  transition: transform 0.6s ease-expo;
+}
+
+.marquee__inner-wrap {
+  height: 100%;
+  width: 200%;
+  display: flex;
+  transform: translateX(0);
+}
+
+.marquee__inner {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  width: 200%;
+  will-change: transform;
+  animation: marquee 15s linear infinite;
+}
+
+.marquee span {
+  color: #ffffff;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-weight: 400;
+  font-size: 4vh;
+  line-height: 1.2;
+  padding: 1vh 1vw 0;
+}
+
+.marquee__img {
+  width: 200px;
+  height: 7vh;
+  margin: 2em 2vw;
+  padding: 1em 0;
+  border-radius: 50px;
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+.menu__item-link:hover+.marquee {
+  transform: translate3d(0, 0%, 0);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
