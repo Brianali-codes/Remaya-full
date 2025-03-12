@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_SUPABASE_EDGE_FUNCTION_URL;
+
 export const updateProfile = async (profileData) => {
   const response = await fetch('http://localhost:5000/api/users/profile', {
     method: 'PUT',
