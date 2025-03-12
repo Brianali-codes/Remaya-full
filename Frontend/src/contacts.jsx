@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from 'react-router-dom';
 
 function Snackbar({ message, type, show }) {
   return (
@@ -8,12 +9,10 @@ function Snackbar({ message, type, show }) {
   );
 }
 
-
-
 export default function Contacts() {
-  const [email, setEmail] = useState(""); // State to store the email input
-  const [isLoading, setIsLoading] = useState(false); // State for loader animation
-  const [snackbar, setSnackbar] = useState({ message: "", type: "" }); // Snackbar state
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ message: "", type: "", show: false });
 
   const handleSubscribe = async () => {
     if (!email) {
@@ -24,7 +23,7 @@ export default function Contacts() {
     const data = { email };
 
     try {
-      setIsLoading(true); // Start loader
+      setIsLoading(true);
       const response = await fetch("https://remaya-backend.onrender.com/api/save-newsLetter", {
         method: "POST",
         headers: {
@@ -38,36 +37,28 @@ export default function Contacts() {
       }
 
       const result = await response.json();
-      setIsLoading(false); // Stop loader after success
+      setIsLoading(false);
       showSnackbar(result.message || "Successfully subscribed!", "success");
-      setEmail(""); 
+      setEmail("");
     } catch (error) {
       console.error("Error:", error);
-      setIsLoading(false); // Stop loader on error (including CORS)
+      setIsLoading(false);
 
-      // Handle different types of errors and display snackbar accordingly
       const errorMessage = error.name === "TypeError" && error.message.includes("Failed to fetch")
         ? "Network error. Please check your internet connection or try again later."
-        : "An error occurred, or email already exists Please try again.";
+        : "An error occurred, or email already exists. Please try again.";
       
       setTimeout(() => {
-        showSnackbar(errorMessage, "error"); // Show snackbar after loader stops
-      }, 300); // Delay to allow loader to finish before showing error
+        showSnackbar(errorMessage, "error");
+      }, 300);
     }
   };
 
   const showSnackbar = (message, type) => {
     setSnackbar({ message, type, show: true });
-  
-    // After 4 seconds, hide the snackbar (start the disappear animation)
     setTimeout(() => {
-      setSnackbar(prev => ({ ...prev, show: false })); // Set show to false to trigger hide
-    }, 4000); // Wait 4 seconds before hiding
-  };
-  
-
-  const closeSnackbar = () => {
-    setSnackbar({ message: "", type: "" }); // Close the snackbar when the button is clicked
+      setSnackbar(prev => ({ ...prev, show: false }));
+    }, 4000);
   };
 
   return (
@@ -80,62 +71,60 @@ export default function Contacts() {
           <p className="desc font-bold text-center">PO BOX : 8545-00200</p>
           <p className="desc font-bold text-center">Nairobi, Kenya</p>
         </div>
+
         <div className="flex flex-col items-center">
           <p className="desc font-bold text-lg text-center">Subscribe to our Newsletter</p>
           <p className="desc text-center">
             Be the first to hear important updates, see brand new resources, and find new ways to connect from the team at Remaya organization.
           </p>
           <input
-            type="email" // Use 'email' type for input validation
+            type="email"
             placeholder="Your Email Address..."
             className="desc text-center"
             id="email-input"
             value={email}
-            onChange={(e) => setEmail(e.target.value)} // Updates the state on input change
-            
+            onChange={(e) => setEmail(e.target.value)}
           />
           <br />
           <button
             className="desc subscribe-button flex items-center justify-center"
             onClick={handleSubscribe}
-            disabled={isLoading} // Disable button during loading
+            disabled={isLoading}
           >
-            {isLoading ? ( 
-              <span className="loader mr-2"></span> // Spinner animation
+            {isLoading ? (
+              <span className="loader mr-2"></span>
             ) : (
               "Subscribe"
             )}
           </button>
         </div>
-        <div className="flex flex-col items-center">
-          <a href="#MAIN1">
-            <button className="btn">Home</button>
-          </a>
-          <a href="#abd">
-            <button className="btn">About us</button>
-          </a>
-          <a href="#projects">
-            <button className="btn">Projects</button>
-          </a>
-          <a href="#mission">
-            <button className="btn">Mission And Vision</button>
-          </a>
-        </div>
-        
 
+        <div className="flex flex-col items-center">
+          <Link to="/"><button className="btn">Home</button></Link>
+          <Link to="/blog"><button className="btn">Blog</button></Link>
+          {localStorage.getItem('token') ? (
+            <Link to="/dashboard"><button className="btn">My Account</button></Link>
+          ) : (
+            <>
+              <Link to="/signin"><button className="btn">Sign In</button></Link>
+              <Link to="/signup"><button className="btn">Sign Up</button></Link>
+            </>
+          )}
+          {localStorage.getItem('adminToken') && (
+            <Link to="/admin/dashboard"><button className="btn">Admin Panel</button></Link>
+          )}
+          <Link to="/donate"><button className="btn">Donate</button></Link>
+        </div>
+
+        {snackbar.message && (
+          <Snackbar
+            message={snackbar.message}
+            type={snackbar.type}
+            show={snackbar.show}
+          />
+        )}
       </div>
 
-      {/* Snackbar */}
-      {snackbar.message && (
-        <Snackbar
-          message={snackbar.message}
-          type={snackbar.type}
-          show={snackbar.show} // Pass the show state to the Snackbar
-        />
-      )}
-
-
-      {/* Loader and Snackbar Styles */}
       <style>{`
         .loader {
           border: 3px solid #f3f3f3;
@@ -147,37 +136,33 @@ export default function Contacts() {
         }
 
         @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
         .snackbar {
           position: fixed;
           bottom: 20px;
           left: 50%;
-          transform: translateX(-50%) translateY(100px); /* Start off-screen below */
+          transform: translateX(-50%) translateY(100px);
           padding: 10px 20px;
           border-radius: 5px;
           color: #fff;
           font-size: 14px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
           z-index: 9999;
-          opacity: 0; /* Start invisible */
-          transition: transform 0.5s ease, opacity 0.5s ease; /* Transition for sliding and fading */
+          opacity: 0;
+          transition: transform 0.5s ease, opacity 0.5s ease;
         }
 
         .snackbar.show {
-          transform: translateX(-50%) translateY(0); /* Slide into view */
-          opacity: 1; /* Fade in */
+          transform: translateX(-50%) translateY(0);
+          opacity: 1;
         }
 
         .snackbar.hide {
-          transform: translateX(-50%) translateY(100px); /* Slide out of view */
-          opacity: 0; /* Fade out */
+          transform: translateX(-50%) translateY(100px);
+          opacity: 0;
         }
 
         .snackbar.success {

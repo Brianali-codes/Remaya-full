@@ -73,7 +73,7 @@ export default function Blog() {
           <p className="text-start desc ">
             Imagine a child receiving their first schoolbook, a homeless person finding shelter for the night, or an elderly individual feeling valued and cared for—these are the moments that define our mission. Through collective efforts, we can break cycles of poverty, empower communities, and bring hope to those who need it most. Join us today in making a difference. Together, we can turn compassion into action and create a brighter future for all. How You Can Help you ask? well some ways include : Donating: Your financial support enables us to provide food, education, and healthcare to those in need. Volunteering : Give your time and skills to support our programs and directly impact lives. Spreading the Word: Share our mission with friends and family to raise awareness and encourage more people to get involved. Your kindness has the power to change lives. Be a part of the change today!
           </p>
-          <Link to="/learnMore">
+          <Link to="/blog">
             <button className="support-btn">Read More | <FontAwesomeIcon icon={faArrowRight} /></button>
           </Link>
         </div>

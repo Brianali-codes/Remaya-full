@@ -1,33 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
-const BackButton = styled.button`
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.5rem 1rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #4a5568;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-
-  &:hover {
-    background: #f8fafc;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const SignIn = () => {
+const AdminSignIn = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,45 +22,52 @@ const SignIn = () => {
     setErrorMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/signin", {
+      console.log("Submitting admin credentials:", { email: formData.email });
+      
+      const response = await fetch("http://localhost:5000/api/admin/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
+      console.log("Server response:", data);
 
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", data.user.id);
-        localStorage.setItem("userEmail", data.user.email);
-        navigate("/user/dashboard");
-      } else {
-        throw new Error(data.message || "Failed to sign in");
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to sign in as admin");
       }
+
+      localStorage.setItem("adminToken", data.token);
+      localStorage.setItem("isAdmin", "true");
+      navigate("/admin/dashboard");
     } catch (error) {
-      setErrorMessage(error.message);
+      console.error("Admin sign-in error:", error);
+      setErrorMessage("Invalid admin credentials");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className='flex flex-col justify-center items-center h-screen' id='signup-bg'>
-      <BackButton onClick={() => navigate('/')}>
-        <FontAwesomeIcon icon={faArrowLeft} /> Back
-      </BackButton>
-      <div id='signup-bg1' className='flex flex-col justify-center items-center h-screen'>
+    <div className='flex flex-col justify-center items-center h-screen' id='admin-bg'>
+      <div id='admin-bg1' className='flex flex-col justify-center items-center h-screen'>
         <StyledWrapper>
           <form className="modern-form" onSubmit={handleSubmit}>
-            <div className="form-title">Sign In</div>
+            <div className="form-title">Admin Sign In</div>
             <div className="form-body">
               <div className="input-group">
                 <div className="input-wrapper">
                   <svg fill="none" viewBox="0 0 24 24" className="input-icon">
                     <path strokeWidth="1.5" stroke="currentColor" d="M3 8L10.8906 13.2604C11.5624 13.7083 12.4376 13.7083 13.1094 13.2604L21 8M5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19Z" />
                   </svg>
-                  <input required name="email" placeholder="Email" className="form-input" type="email" onChange={handleChange} />
+                  <input 
+                    required 
+                    name="email" 
+                    placeholder="Admin Email" 
+                    className="form-input" 
+                    type="email" 
+                    onChange={handleChange} 
+                  />
                 </div>
               </div>
               <div className="input-group">
@@ -93,16 +75,23 @@ const SignIn = () => {
                   <svg fill="none" viewBox="0 0 24 24" className="input-icon">
                     <path strokeWidth="1.5" stroke="currentColor" d="M12 10V14M8 6H16C17.1046 6 18 6.89543 18 8V16C18 17.1046 17.1046 18 16 18H8C6.89543 18 6 17.1046 6 16V8C6 6.89543 6.89543 6 8 6Z" />
                   </svg>
-                  <input required name="password" placeholder="Password" className="form-input" type="password" onChange={handleChange} />
+                  <input 
+                    required 
+                    name="password" 
+                    placeholder="Admin Password" 
+                    className="form-input" 
+                    type="password" 
+                    onChange={handleChange} 
+                  />
                 </div>
               </div>
             </div>
             {errorMessage && <p className="error-message">{errorMessage}</p>}
             <button className="submit-button" type="submit" disabled={loading}>
-              {loading ? "Signing In..." : "Log in"}
+              {loading ? "Signing In..." : "Admin Login"}
             </button>
             <div className="form-footer">
-              Don't have an account? <Link to="/signup"><span>Sign Up</span></Link>
+              <Link to="/signin"><span>Back to User Login</span></Link>
             </div>
           </form>
         </StyledWrapper>
@@ -227,101 +216,27 @@ const StyledWrapper = styled.div`
     transition: transform 0.5s ease;
   }
 
+  .error-message {
+    color: red;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
   .form-footer {
-    margin-top: 16px;
     text-align: center;
-    font-size: 13px;
+    margin-top: 1rem;
   }
 
-  .login-link {
-    color: var(--text-secondary);
+  .form-footer a {
+    color: var(--primary);
     text-decoration: none;
-    transition: all 0.2s ease;
   }
 
-  .login-link span {
-    color: var(--primary);
-    font-weight: 500;
+  .form-footer a:hover {
+    text-decoration: underline;
   }
 
-  /* Hover & Focus States */
-  .form-input:hover {
-    border-color: #cbd5e1;
-  }
-
-  .form-input:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: white;
-    box-shadow: 0 0 0 4px var(--primary-light);
-  }
-
-  .password-toggle:hover {
-    color: var(--primary);
-    transform: scale(1.1);
-  }
-
-  .submit-button:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow:
-      0 4px 12px rgba(59, 130, 246, 0.25),
-      0 2px 4px rgba(59, 130, 246, 0.15);
-  }
-
-  .submit-button:hover .button-glow {
-    transform: translateX(100%);
-  }
-
-  .login-link:hover {
-    color: var(--text-main);
-  }
-
-  .login-link:hover span {
-    color: var(--primary-dark);
-  }
-
-  /* Active States */
-  .submit-button:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
-  .password-toggle:active {
-    transform: scale(0.9);
-  }
-
-  /* Validation States */
-  .form-input:not(:placeholder-shown):valid {
-    border-color: var(--success);
-  }
-
-  .form-input:not(:placeholder-shown):valid ~ .input-icon {
-    color: var(--success);
-  }
-
-  /* Animation */
-  @keyframes shake {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    25% {
-      transform: translateX(-4px);
-    }
-    75% {
-      transform: translateX(4px);
-    }
-  }
-
-  .form-input:not(:placeholder-shown):invalid {
-    border-color: #ef4444;
-    animation: shake 0.2s ease-in-out;
-  }
-
-  .form-input:not(:placeholder-shown):invalid ~ .input-icon {
-    color: #ef4444;
-  }
+  /* Add any additional styles as needed */
 `;
 
-export default SignIn;
+export default AdminSignIn; 
