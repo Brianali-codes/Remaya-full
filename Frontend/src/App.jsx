@@ -19,7 +19,7 @@ import Blog from './blog';
 import ScrollToTop from './scrollToTop';
 import SignUp from './pages/signup';
 import SignIn from './pages/signin';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/dashboard';
 import AdminDashboard from './pages/adminDashboard';
 import AdminSignIn from './pages/adminSignIn'; // Import the Admin Sign In page
 import ProtectedRoute from './components/ProtectedRoute';
