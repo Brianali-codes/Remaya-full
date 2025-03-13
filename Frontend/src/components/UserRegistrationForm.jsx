@@ -40,7 +40,7 @@ const UserRegistrationForm = () => {
     formDataToSend.append('profileImage', formData.profileImage);
 
     try {
-      const response = await fetch('http://localhost:5000/api/students', {
+      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/students', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`

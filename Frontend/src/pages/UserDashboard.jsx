@@ -129,7 +129,7 @@ const UserDashboard = () => {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`http://localhost:5000/api/blogs/user/${userId}`, {
+      const response = await fetch(`https://shxplstyxjippikogpwc.supabase.co/api/blogs/user/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -152,7 +152,7 @@ const UserDashboard = () => {
   // Fetch user profile
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/profile', {
+      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/users/profile', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -198,7 +198,7 @@ const UserDashboard = () => {
 
       console.log('Submitting blog with data:', blogData);
 
-      const response = await fetch('http://localhost:5000/api/blogs', {
+      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/blogs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ const UserDashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+      const response = await fetch(`https://shxplstyxjippikogpwc.supabase.co/api/blogs/${blogId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ const UserDashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+      const response = await fetch(`https://shxplstyxjippikogpwc.supabase.co/api/blogs/${blogId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -289,7 +289,7 @@ const UserDashboard = () => {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/profile-image', {
+      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/users/profile-image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -351,7 +351,7 @@ const UserDashboard = () => {
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/users/profile', {
+      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

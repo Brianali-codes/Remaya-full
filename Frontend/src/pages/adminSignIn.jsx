@@ -24,7 +24,7 @@ const AdminSignIn = () => {
     try {
       console.log("Submitting admin credentials:", { email: formData.email });
       
-      const response = await fetch("http://localhost:5000/api/admin/signin", {
+      const response = await fetch("https://shxplstyxjippikogpwc.supabase.co/api/admin/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

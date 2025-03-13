@@ -46,7 +46,7 @@ const SignIn = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/signin', {
+      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

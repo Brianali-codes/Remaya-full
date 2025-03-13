@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { API_URL } from '../config/config';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ const SignUp = () => {
 
     try {
       // First, sign up the user
-      const signUpResponse = await fetch("http://localhost:5000/api/signup", {
+      const signUpResponse = await fetch(`${API_URL}/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -39,7 +40,7 @@ const SignUp = () => {
       }
 
       // After successful signup, sign in automatically
-      const signInResponse = await fetch("http://localhost:5000/api/signin", {
+      const signInResponse = await fetch(`${API_URL}/api/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
