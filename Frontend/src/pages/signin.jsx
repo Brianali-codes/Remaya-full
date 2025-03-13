@@ -41,28 +41,28 @@ const SignIn = () => {
     setErrorMessage("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage("");
-
     try {
-      const response = await fetch("http://localhost:5000/api/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('http://localhost:5000/api/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", data.user.id);
-        localStorage.setItem("userEmail", data.user.email);
-        navigate("/user/dashboard");
-      } else {
-        throw new Error(data.message || "Failed to sign in");
+      if (!response.ok) {
+        throw new Error(data.message);
       }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.userId);
+      localStorage.setItem('userEmail', data.email);
+      navigate('/user/dashboard');
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -77,7 +77,7 @@ const SignIn = () => {
       </BackButton>
       <div id='signup-bg1' className='flex flex-col justify-center items-center h-screen'>
         <StyledWrapper>
-          <form className="modern-form" onSubmit={handleSubmit}>
+          <form className="modern-form" onSubmit={handleSignIn}>
             <div className="form-title">Sign In</div>
             <div className="form-body">
               <div className="input-group">

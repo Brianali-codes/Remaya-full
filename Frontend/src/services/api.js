@@ -1,7 +1,7 @@
-const API_URL = import.meta.env.VITE_SUPABASE_EDGE_FUNCTION_URL;
+const API_URL = 'http://localhost:5000';
 
 export const updateProfile = async (profileData) => {
-  const response = await fetch('http://localhost:5000/api/users/profile', {
+  const response = await fetch(`${API_URL}/api/users/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ export const updateProfile = async (profileData) => {
 };
 
 export const updatePassword = async (passwordData) => {
-  const response = await fetch('http://localhost:5000/api/users/password', {
+  const response = await fetch(`${API_URL}/api/users/password`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ export const updatePassword = async (passwordData) => {
 };
 
 export const updateProfileImage = async (imageUrl) => {
-  const response = await fetch('http://localhost:5000/api/users/profile-image', {
+  const response = await fetch(`${API_URL}/api/users/profile-image`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export const updateProfileImage = async (imageUrl) => {
 };
 
 export const fetchUserProfile = async () => {
-  const response = await fetch('http://localhost:5000/api/users/profile', {
+  const response = await fetch(`${API_URL}/api/users/profile`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }

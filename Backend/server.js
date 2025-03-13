@@ -12,8 +12,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
-  credentials: true
+  origin: 'http://localhost:5173' // Allow frontend development server
 }));
 
 // Initialize Supabase client
@@ -58,23 +57,21 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
-// Configure multer for image upload
+// Configure multer for local storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-const upload = multer({
-  dest: 'uploads/', // or configure with your cloud storage
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  }
-});
+const upload = multer({ storage: storage });
+
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
 
 // Signup Route
 app.post("/api/signup", async (req, res) => {
@@ -451,9 +448,6 @@ app.post("/api/upload", upload.single('image'), async (req, res) => {
     res.status(500).json({ message: 'Failed to upload image' });
   }
 });
-
-// Serve uploaded files
-app.use('/uploads', express.static('uploads'));
 
 // Update user profile
 app.put('/api/users/profile', authenticateToken, async (req, res) => {
