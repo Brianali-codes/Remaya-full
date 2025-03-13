@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 const app = express();
 
@@ -39,16 +40,25 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ message: 'No token provided' });
+      return res.status(401).json({ message: 'Authentication token required' });
     }
 
+    // Verify the token
     jwt.verify(token, process.env.JWT_SECRET || 'remaya_secret_key_2024', (err, decoded) => {
       if (err) {
         console.error('Token verification error:', err);
-        return res.status(403).json({ message: 'Invalid or expired token' });
+        if (err.name === 'TokenExpiredError') {
+          return res.status(403).json({ message: 'Token has expired' });
+        }
+        return res.status(403).json({ message: 'Invalid token' });
       }
 
-      req.user = decoded;
+      // Add user info to request
+      req.user = {
+        id: decoded.id,
+        email: decoded.email,
+        isAdmin: decoded.isAdmin
+      };
       next();
     });
   } catch (error) {
@@ -69,6 +79,24 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// Configure multer for profile images
+const profileStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/profiles/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const profileUpload = multer({ 
+  storage: profileStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // Serve uploaded files statically
 app.use('/uploads', express.static('uploads'));
@@ -148,7 +176,7 @@ app.post("/api/signin", async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({ 
+    res.json({
       message: "Login successful", 
       token: token,
       user: {
@@ -213,59 +241,66 @@ app.post("/api/admin/signin", async (req, res) => {
     const { email, password } = req.body;
     
     if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
-      return res.status(401).json({ message: "Invalid admin credentials" });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
       { 
-        id: '00000000-0000-0000-0000-000000000000',
+        id: 'admin',
         email: process.env.ADMIN_EMAIL,
-        role: 'admin'
+        isAdmin: true 
       },
-      process.env.JWT_SECRET || 'remaya_secret_key_2024', // Fallback secret
+      process.env.JWT_SECRET || 'remaya_secret_key_2024',
       { expiresIn: '24h' }
     );
 
-    res.json({ 
-      message: "Admin login successful",
-      token: token,
+    res.json({
+      token,
+      email: process.env.ADMIN_EMAIL,
       isAdmin: true
     });
   } catch (error) {
-    console.error("Admin signin error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error('Admin signin error:', error);
+    res.status(500).json({ message: 'Error during admin sign in' });
   }
 });
 
 // Create Blog Post Route
 app.post("/api/blogs", authenticateToken, async (req, res) => {
   try {
-    const { title, content, imageUrl, twitterHandle, linkedinHandle } = req.body;
+    const { title, content, imageUrl, twitterHandle, linkedinHandle, is_admin_post } = req.body;
+    
+    // Check if user is admin when trying to create admin post
+    if (is_admin_post && !req.user.isAdmin) {
+      return res.status(403).json({ message: 'Only admins can create admin posts' });
+    }
+
     const userId = req.user.id;
     const userEmail = req.user.email;
 
-    // Create the blog
+    if (!title || !content) {
+      return res.status(400).json({ message: 'Title and content are required' });
+    }
+
     const { data, error } = await supabase
       .from('blogs')
       .insert([
         {
           title,
           content,
-          image_url: imageUrl, // Make sure this matches the column name in your database
+          image_url: imageUrl,
           user_id: userId,
           user_email: userEmail,
           twitter_handle: twitterHandle,
           linkedin_handle: linkedinHandle,
+          is_admin_post: is_admin_post || false,
           created_at: new Date(),
           updated_at: new Date()
         }
       ])
       .select();
 
-    if (error) {
-      console.error('Blog creation error:', error);
-      throw error;
-    }
+    if (error) throw error;
 
     res.json(data[0]);
   } catch (error) {
@@ -274,36 +309,61 @@ app.post("/api/blogs", authenticateToken, async (req, res) => {
   }
 });
 
-// Get user blogs
+// Get all blogs route
+app.get("/api/blogs", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching blogs:', error);
+    res.status(500).json({ message: 'Failed to fetch blogs' });
+  }
+});
+
+// Get user's blogs route
 app.get("/api/blogs/user/:userId", authenticateToken, async (req, res) => {
   try {
-    const { data: blogs, error } = await supabase
+    const userId = req.params.userId;
+    
+    // Validate userId
+    if (!userId || userId === 'undefined') {
+      return res.status(400).json({ message: 'Valid user ID is required' });
+    }
+
+    // For admin users, they might have a non-UUID id
+    if (req.user.isAdmin) {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('is_admin_post', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return res.json(data);
+    }
+
+    // For regular users
+    const { data, error } = await supabase
       .from('blogs')
-      .select(`
-        id,
-        title,
-        content,
-        image_url,
-        user_id,
-        user_email,
-        twitter_handle,
-        linkedin_handle,
-        created_at,
-        updated_at,
-        is_admin_post
-      `)
-      .eq('user_id', req.params.userId)
+      .select('*')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching user blogs:', error);
+      console.error('Database error:', error);
       throw error;
     }
 
-    res.json(blogs);
+    res.json(data);
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Error fetching user blogs' });
+    console.error('Error fetching user blogs:', error);
+    res.status(500).json({ message: 'Failed to fetch user blogs' });
   }
 });
 
@@ -503,41 +563,28 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Update profile image
-app.post('/api/users/profile-image', authenticateToken, async (req, res) => {
+// Profile image upload route
+app.post('/api/users/profile-image', authenticateToken, profileUpload.single('image'), async (req, res) => {
   try {
-    const { imageUrl } = req.body;
-    const userId = req.user.id;
-
-    // First, check if profile exists
-    const { data: existingProfile } = await supabase
-      .from('user_profiles')
-      .select()
-      .eq('id', userId)
-      .single();
-
-    if (!existingProfile) {
-      // Create new profile if it doesn't exist
-      const { error } = await supabase
-        .from('user_profiles')
-        .insert([{ id: userId, profile_image: imageUrl }]);
-      if (error) throw error;
-    } else {
-      // Update existing profile
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ 
-          profile_image: imageUrl,
-          updated_at: new Date()
-        })
-        .eq('id', userId);
-      if (error) throw error;
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
     }
 
-    res.json({ message: 'Profile image updated successfully', imageUrl });
+    const imageUrl = `/uploads/profiles/${req.file.filename}`;
+    const userId = req.user.id;
+
+    // Update user's profile image in database
+    const { error } = await supabase
+      .from('profiles')
+      .update({ profile_image: imageUrl })
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    res.json({ imageUrl });
   } catch (error) {
-    console.error('Error updating profile image:', error);
-    res.status(500).json({ message: 'Failed to update profile image' });
+    console.error('Error uploading profile image:', error);
+    res.status(500).json({ message: 'Failed to upload profile image' });
   }
 });
 
@@ -557,31 +604,41 @@ app.put('/api/users/password', authenticateToken, async (req, res) => {
   }
 });
 
-// Get all blogs
-app.get("/api/blogs", async (req, res) => {
+// Student registration route
+app.post("/api/students", authenticateToken, upload.single('profileImage'), async (req, res) => {
   try {
-    const { data: blogs, error } = await supabase
-      .from('blogs')
-      .select(`
-        *,
-        profiles:user_id (
-          id,
-          email
-        )
-      `)
-      .order('created_at', { ascending: false });
+    const { fullName, school, studentId, amountAllocated } = req.body;
+    const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
 
-    if (error) {
-      console.error('Error fetching blogs:', error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('students')
+      .insert([
+        {
+          full_name: fullName,
+          school,
+          student_id: studentId,
+          amount_allocated: amountAllocated,
+          profile_image: profileImage,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ])
+      .select();
 
-    res.json(blogs);
+    if (error) throw error;
+
+    res.json(data[0]);
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Error fetching blogs' });
+    console.error('Error registering student:', error);
+    res.status(500).json({ message: 'Failed to register student' });
   }
 });
+
+// Create profiles directory if it doesn't exist
+const profilesDir = path.join(__dirname, 'uploads/profiles');
+if (!fs.existsSync(profilesDir)) {
+  fs.mkdirSync(profilesDir, { recursive: true });
+}
 
 // Start Server
 const PORT = process.env.PORT || 5000;

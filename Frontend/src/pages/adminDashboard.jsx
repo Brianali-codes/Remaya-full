@@ -5,6 +5,7 @@ import { Tab, Tabs } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBlog, faChartLine, faCog, faUsers, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import BlogFormModal from '../components/BlogFormModal';
+import UserRegistrationForm from '../components/UserRegistrationForm';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -27,14 +28,21 @@ const AdminDashboard = () => {
     
     if (!adminToken || !isAdmin) {
       navigate("/admin/signin");
+      return;
     }
     fetchBlogs();
   }, [navigate]);
 
   const fetchBlogs = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/blogs');
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await fetch('http://localhost:5000/api/blogs', {
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
       setBlogs(data);
       setLoading(false);
     } catch (error) {
@@ -88,11 +96,26 @@ const AdminDashboard = () => {
             Create New Blog
           </ActionButton>
           <BlogsList>
-            {blogs.map(blog => (
-              <BlogCard key={blog.id}>
-                {/* Blog card content */}
-              </BlogCard>
-            ))}
+            {loading ? (
+              <div>Loading blogs...</div>
+            ) : blogs.length === 0 ? (
+              <div>No blogs found</div>
+            ) : (
+              blogs.map(blog => (
+                <BlogCard key={blog.id}>
+                  <h3>{blog.title}</h3>
+                  <p>By: {blog.user_email || 'Anonymous'}</p>
+                  <p>Created: {new Date(blog.created_at).toLocaleDateString()}</p>
+                  {blog.image_url && (
+                    <img 
+                      src={blog.image_url} 
+                      alt={blog.title} 
+                      style={{ maxWidth: '200px' }} 
+                    />
+                  )}
+                </BlogCard>
+              ))
+            )}
           </BlogsList>
         </Tab>
 
@@ -101,12 +124,11 @@ const AdminDashboard = () => {
           title={
             <TabTitle>
               <FontAwesomeIcon icon={faUsers} />
-              <span>Users</span>
+              <span>Students</span>
             </TabTitle>
           }
         >
-          <h2>User Management</h2>
-          {/* User management content */}
+          <UserRegistrationForm />
         </Tab>
 
         <Tab 
@@ -142,6 +164,7 @@ const AdminDashboard = () => {
         onSubmit={fetchBlogs}
         formData={formData}
         setFormData={setFormData}
+        isAdmin={true}
       />
     </DashboardContainer>
   );

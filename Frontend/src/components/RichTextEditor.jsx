@@ -11,28 +11,33 @@ const RichTextEditor = ({ value, onChange }) => {
       ['blockquote', 'code-block'],
       [{ 'color': [] }, { 'background': [] }],
       ['link', 'image'],
-      ['clean'],
-      ['undo', 'redo']
+      ['clean']
     ],
+    clipboard: {
+      matchVisual: false
+    }
   };
 
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'blockquote', 'code-block',
-    'color', 'background',
-    'link', 'image',
-  ];
-
   return (
-    <ReactQuill
-      theme="snow"
-      value={value}
-      onChange={onChange}
-      modules={modules}
-      formats={formats}
-    />
+    <div className="rich-text-editor">
+      <ReactQuill
+        theme="snow"
+        value={value || ''}
+        onChange={onChange}
+        modules={modules}
+        preserveWhitespace={true}
+        style={{ height: '300px', marginBottom: '50px' }}
+      />
+      <style jsx>{`
+        .rich-text-editor {
+          margin-bottom: 3rem;
+        }
+        .ql-editor {
+          min-height: 200px;
+          font-size: 16px;
+        }
+      `}</style>
+    </div>
   );
 };
 

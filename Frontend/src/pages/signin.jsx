@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { supabase } from '../lib/supabaseClient';
 
 const BackButton = styled.button`
   position: fixed;
@@ -60,10 +61,11 @@ const SignIn = () => {
       }
 
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.userId);
-      localStorage.setItem('userEmail', data.email);
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userEmail', data.user.email);
       navigate('/user/dashboard');
     } catch (error) {
+      console.error('Error signing in:', error.message);
       setErrorMessage(error.message);
     } finally {
       setLoading(false);

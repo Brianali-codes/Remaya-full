@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { format } from 'date-fns';
 import RichTextEditor from '../components/RichTextEditor';
 import { useNavigate } from 'react-router-dom';
-import { faArrowLeft, faUser, faBlog, faLock, faCog, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faUser, faBlog, faLock, faCog, faEdit, faTrash, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { faTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tab, Tabs } from 'react-bootstrap';
@@ -11,6 +11,62 @@ import { updateProfileImage, updateProfile } from '../services/api';
 import BlogFormModal from '../components/BlogFormModal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+
+const ProfileImageContainer = styled.div`
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 3px solid #4299e1;
+`;
+
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const DefaultProfileIcon = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #718096;
+`;
+
+const UploadOverlay = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  .upload-label {
+    color: white;
+    cursor: pointer;
+    font-size: 0.875rem;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  ${ProfileImageContainer}:hover & {
+    opacity: 1;
+  }
+`;
+
+const ProfileImageSection = styled.div`
+  margin-bottom: 2rem;
+`;
 
 const UserDashboard = () => {
   const [blogs, setBlogs] = useState([]);
@@ -45,22 +101,32 @@ const UserDashboard = () => {
     linkedinHandle: ''
   });
   const [loadedImages, setLoadedImages] = useState({});
+  const [profileImage, setProfileImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    
+    if (!token || !userId) {
+      navigate('/signin');
+      return;
+    }
+    
     fetchUserBlogs();
     fetchUserProfile();
-  }, []);
+  }, [navigate]);
 
   // Fetch user's blogs
   const fetchUserBlogs = async () => {
     try {
-      setLoading(true);
-      const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
-      
-      if (!userId || !token) {
-        throw new Error('User not authenticated');
+      const userId = localStorage.getItem('userId');
+
+      if (!token || !userId) {
+        throw new Error('Authentication required');
       }
 
       const response = await fetch(`http://localhost:5000/api/blogs/user/${userId}`, {
@@ -68,12 +134,11 @@ const UserDashboard = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to fetch blogs');
+        throw new Error('Failed to fetch blogs');
       }
-      
+
       const data = await response.json();
       setBlogs(data);
     } catch (error) {
@@ -219,36 +284,29 @@ const UserDashboard = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setImageLoading(true);
-    setError('');
-
+    setUploading(true);
     const formData = new FormData();
     formData.append('image', file);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/upload', {
+      const response = await fetch('http://localhost:5000/api/users/profile-image', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: formData
       });
 
+      if (!response.ok) throw new Error('Failed to upload image');
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
-      setUserProfile(prev => ({
-        ...prev,
-        profileImage: data.imageUrl
-      }));
-
-      alert('Profile image updated successfully!');
+      setProfileImage(data.imageUrl);
+      setPreviewUrl(URL.createObjectURL(file));
     } catch (error) {
       console.error('Error uploading image:', error);
-      setError('Failed to upload image. Please try again.');
+      alert('Failed to upload image');
     } finally {
-      setImageLoading(false);
+      setUploading(false);
     }
   };
 
@@ -420,21 +478,6 @@ const UserDashboard = () => {
     display: flex;
     gap: 2rem;
     margin-bottom: 2rem;
-  `;
-
-  const ProfileImageContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  `;
-
-  const ProfileImage = styled.img`
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #3b82f6;
   `;
 
   const ProfileInfo = styled.div`
@@ -737,25 +780,26 @@ const UserDashboard = () => {
             <ProfileSection>
               <ProfileHeader>
                 <ProfileImageContainer>
-                  <ProfileImage src={userProfile.profileImage} alt="Profile" />
-                  <div>
-                    <input
-                      type="file"
-                      id="profileImage"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      style={{ display: 'none' }}
-                    />
-                    <label htmlFor="profileImage">
-                      {imageLoading ? (
-                        <button disabled className="btn btn-primary">Uploading...</button>
-                      ) : (
-                        <button type="button" className="btn btn-primary">
-                          Change Image
-                        </button>
-                      )}
+                  {(profileImage || previewUrl) ? (
+                    <ProfileImage src={previewUrl || profileImage} alt="Profile" />
+                  ) : (
+                    <DefaultProfileIcon>
+                      <FontAwesomeIcon icon={faCamera} size="2x" />
+                    </DefaultProfileIcon>
+                  )}
+                  <UploadOverlay>
+                    <label htmlFor="profile-upload" className="upload-label">
+                      {uploading ? 'Uploading...' : 'Change Photo'}
+                      <input
+                        id="profile-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                        disabled={uploading}
+                      />
                     </label>
-                  </div>
+                  </UploadOverlay>
                 </ProfileImageContainer>
                 
                 {isEditingProfile ? (

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import RichTextEditor from './RichTextEditor';
 
-const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdmin, adminToken }) => {
+const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdmin }) => {
   if (!isOpen) return null;
 
   // Local state to handle input changes
@@ -69,14 +69,12 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
     }
 
     try {
-      const token = isAdmin ? adminToken : localStorage.getItem('token');
-
+      const token = isAdmin ? localStorage.getItem('adminToken') : localStorage.getItem('token');
+      
       if (!token) {
-        alert(`Please sign in to create a blog`);
+        alert('Please sign in to create a blog');
         return;
       }
-
-      console.log('Creating blog with token:', token); // Debug log
 
       const response = await fetch('http://localhost:5000/api/blogs', {
         method: 'POST',
@@ -86,38 +84,40 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
         },
         body: JSON.stringify({
           ...localFormData,
-          imageUrl: localFormData.imageUrl
-        }),
+          is_admin_post: isAdmin
+        })
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create blog');
+        if (response.status === 403) {
+          // Token expired
+          if (isAdmin) {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('isAdmin');
+          } else {
+            localStorage.removeItem('token');
+          }
+          throw new Error('Your session has expired. Please sign in again.');
+        }
+        throw new Error(data.message || 'Failed to create blog');
       }
 
-      const data = await response.json();
-
-      // Reset form and close modal
+      onSubmit();
+      onClose();
       setLocalFormData({
         title: '',
         content: '',
         imageUrl: '',
-        previewUrl: '',
         twitterHandle: '',
         linkedinHandle: ''
       });
-      onClose();
-      if (typeof onSubmit === 'function') {
-        onSubmit();
-      }
     } catch (error) {
       console.error('Error creating blog:', error);
-      if (error.message.includes('expired')) {
-        localStorage.removeItem('token');
-        alert('Your session has expired. Please sign in again.');
-        window.location.href = '/signin';
-      } else {
-        alert(error.message || 'Failed to create blog. Please try again.');
+      alert(error.message);
+      if (error.message.includes('session has expired')) {
+        window.location.href = isAdmin ? '/admin/signin' : '/signin';
       }
     }
   };
@@ -132,27 +132,69 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className={`fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center ${isOpen ? '' : 'hidden'}`}>
+      <div className="bg-white rounded-lg p-8 w-3/4 max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Create New Blog</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <h2 className="text-2xl font-bold mb-6">Create New Blog Post</h2>
+          
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Title
             </label>
             <input
-              id="title"
               type="text"
               name="title"
               value={localFormData.title}
               onChange={handleChange}
-              placeholder="Enter your blog title"
-              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-md"
             />
+          </div>
+
+          <div className="h-96">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Content
+            </label>
+            <RichTextEditor
+              value={localFormData.content}
+              onChange={(content) => handleChange({ target: { name: 'content', value: content }})}
+              className="h-full"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="twitterHandle" className="block text-sm font-medium text-gray-700 mb-2">
+                Twitter Handle
+              </label>
+              <input
+                id="twitterHandle"
+                type="text"
+                name="twitterHandle"
+                value={localFormData.twitterHandle}
+                onChange={handleChange}
+                placeholder="@username"
+                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label htmlFor="linkedinHandle" className="block text-sm font-medium text-gray-700 mb-2">
+                LinkedIn Handle
+              </label>
+              <input
+                id="linkedinHandle"
+                type="text"
+                name="linkedinHandle"
+                value={localFormData.linkedinHandle}
+                onChange={handleChange}
+                placeholder="username"
+                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
           </div>
 
           <div>
@@ -188,47 +230,6 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="twitterHandle" className="block text-sm font-medium text-gray-700 mb-2">
-                Twitter Handle
-              </label>
-              <input
-                id="twitterHandle"
-                type="text"
-                name="twitterHandle"
-                value={localFormData.twitterHandle}
-                onChange={handleChange}
-                placeholder="@username"
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label htmlFor="linkedinHandle" className="block text-sm font-medium text-gray-700 mb-2">
-                LinkedIn Handle
-              </label>
-              <input
-                id="linkedinHandle"
-                type="text"
-                name="linkedinHandle"
-                value={localFormData.linkedinHandle}
-                onChange={handleChange}
-                placeholder="username"
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-              Content
-            </label>
-            <RichTextEditor
-              value={localFormData.content}
-              onChange={(content) => handleChange({ target: { name: 'content', value: content }})}
-            />
           </div>
 
           <div className="flex justify-end space-x-4">
