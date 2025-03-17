@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const AdminSignIn = () => {
   const [formData, setFormData] = useState({
@@ -22,22 +23,28 @@ const AdminSignIn = () => {
     setErrorMessage("");
 
     try {
-      console.log("Submitting admin credentials:", { email: formData.email });
-      
-      const response = await fetch("https://shxplstyxjippikogpwc.supabase.co/api/admin/signin", {
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: supabaseHeaders,
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          gotrue_meta_security: { admin: true } // Add admin flag
+        })
       });
 
       const data = await response.json();
-      console.log("Server response:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to sign in as admin");
       }
 
-      localStorage.setItem("adminToken", data.token);
+      // Verify admin role in user metadata
+      if (!data.user.app_metadata?.is_admin) {
+        throw new Error("Unauthorized: Not an admin user");
+      }
+
+      localStorage.setItem("adminToken", data.access_token);
       localStorage.setItem("isAdmin", "true");
       navigate("/admin/dashboard");
     } catch (error) {

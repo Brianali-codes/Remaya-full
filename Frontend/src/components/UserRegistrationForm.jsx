@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const UserRegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -32,20 +33,33 @@ const UserRegistrationForm = () => {
     e.preventDefault();
     const studentId = generateId();
     
-    const formDataToSend = new FormData();
-    formDataToSend.append('fullName', formData.fullName);
-    formDataToSend.append('school', formData.school);
-    formDataToSend.append('studentId', studentId);
-    formDataToSend.append('amountAllocated', formData.amountAllocated);
-    formDataToSend.append('profileImage', formData.profileImage);
-
     try {
-      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/students', {
+      // First upload the image if exists
+      let imageUrl = '';
+      if (formData.profileImage) {
+        const fileName = `${Date.now()}-${formData.profileImage.name}`;
+        const imageResponse = await fetch(`${SUPABASE_URL}/storage/v1/object/public/student-images/${fileName}`, {
+          method: 'POST',
+          headers: supabaseHeaders,
+          body: formData.profileImage
+        });
+
+        if (!imageResponse.ok) throw new Error('Failed to upload image');
+        imageUrl = `${SUPABASE_URL}/storage/v1/object/public/student-images/${fileName}`;
+      }
+
+      // Create student record
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
-        body: formDataToSend
+        headers: supabaseHeaders,
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          school: formData.school,
+          student_id: studentId,
+          amount_allocated: formData.amountAllocated,
+          profile_image: imageUrl,
+          created_at: new Date().toISOString()
+        })
       });
 
       if (!response.ok) throw new Error('Failed to register student');

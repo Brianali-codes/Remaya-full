@@ -145,23 +145,23 @@ const UserDashboard = () => {
   // Fetch user profile
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/users/profile', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const userId = localStorage.getItem('userId');
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=*`, 
+        {
+          headers: supabaseHeaders
         }
-      });
-      const data = await response.json();
-      
-      if (response.ok) {
-        setUserProfile(prev => ({
-          ...prev,
-          name: data.name || '',
-          bio: data.bio || '',
-          profileImage: data.profile_image || prev.profileImage
-        }));
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile');
       }
+
+      const data = await response.json();
+      return data[0]; // Supabase returns an array, we want the first item
     } catch (error) {
       console.error('Error fetching profile:', error);
+      throw error;
     }
   };
 
@@ -250,26 +250,33 @@ const UserDashboard = () => {
   };
 
   // Delete blog
-  const handleDelete = async (blogId) => {
-    if (!window.confirm('Are you sure you want to delete this blog?')) return;
+  const handleDeleteBlog = async (blogId) => {
+    if (!window.confirm('Are you sure you want to delete this blog?')) {
+      return;
+    }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`https://shxplstyxjippikogpwc.supabase.co/api/blogs/${blogId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/blogs?id=eq.${blogId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            ...supabaseHeaders,
+            'Prefer': 'return=minimal'
+          }
         }
-      });
+      );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message);
+      if (response.status === 204) { // Supabase returns 204 for successful delete
+        // Remove the deleted blog from state
+        setBlogs(blogs.filter(blog => blog.id !== blogId));
+        alert('Blog deleted successfully');
+      } else {
+        throw new Error('Failed to delete blog');
       }
-
-      fetchUserBlogs();
     } catch (error) {
-      setError(error.message);
+      console.error('Error deleting blog:', error);
+      alert('Failed to delete blog');
     }
   };
 
@@ -937,7 +944,7 @@ const UserDashboard = () => {
                                 <FontAwesomeIcon icon={faEdit} />
                               </button>
                               <button
-                                onClick={() => handleDelete(blog.id)}
+                                onClick={() => handleDeleteBlog(blog.id)}
                                 className="text-red-500 hover:text-red-600"
                               >
                                 <FontAwesomeIcon icon={faTrash} />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import RichTextEditor from './RichTextEditor';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdmin }) => {
   if (!isOpen) return null;
@@ -27,29 +28,24 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
     formData.append('image', file);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/upload', {
+      // Create a storage bucket path
+      const fileName = `${Date.now()}-${file.name}`;
+      const response = await fetch(`${SUPABASE_URL}/storage/v1/object/public/blog-images/${fileName}`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+        headers: supabaseHeaders,
+        body: file
       });
 
       if (!response.ok) {
         throw new Error('Failed to upload image');
       }
 
-      const data = await response.json();
-      const imageUrl = data.imageUrl; // Match backend response
-
-      // Create a preview URL
-      const previewUrl = URL.createObjectURL(file);
+      const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/blog-images/${fileName}`;
       
       setLocalFormData(prev => ({
         ...prev,
         imageUrl: imageUrl,
-        previewUrl: previewUrl // Add preview URL
+        previewUrl: URL.createObjectURL(file)
       }));
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -69,42 +65,29 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
     }
 
     try {
-      const token = isAdmin ? localStorage.getItem('adminToken') : localStorage.getItem('token');
-      
-      if (!token) {
-        alert('Please sign in to create a blog');
-        return;
-      }
+      const userId = localStorage.getItem('userId');
+      const isAdminPost = isAdmin ? true : false;
 
-      const response = await fetch('http://localhost:5000/api/blogs', {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: supabaseHeaders,
         body: JSON.stringify({
-          ...localFormData,
-          is_admin_post: isAdmin
+          title: localFormData.title,
+          content: localFormData.content,
+          image_url: localFormData.imageUrl,
+          twitter_handle: localFormData.twitterHandle,
+          linkedin_handle: localFormData.linkedinHandle,
+          user_id: userId,
+          is_admin_post: isAdminPost,
+          created_at: new Date().toISOString()
         })
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        if (response.status === 403) {
-          // Token expired
-          if (isAdmin) {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('isAdmin');
-          } else {
-            localStorage.removeItem('token');
-          }
-          throw new Error('Your session has expired. Please sign in again.');
-        }
-        throw new Error(data.message || 'Failed to create blog');
+        throw new Error('Failed to create blog');
       }
 
-      onSubmit();
+      onSubmit(); // Refresh blog list
       onClose();
       setLocalFormData({
         title: '',
@@ -116,9 +99,6 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
     } catch (error) {
       console.error('Error creating blog:', error);
       alert(error.message);
-      if (error.message.includes('session has expired')) {
-        window.location.href = isAdmin ? '/admin/signin' : '/signin';
-      }
     }
   };
 
