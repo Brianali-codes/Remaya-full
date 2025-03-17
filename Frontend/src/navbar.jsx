@@ -281,29 +281,27 @@ export default function Navbar() {
             <button className="btn" onClick={checkState}>Blog</button>
           </motion.a>
 
-          <motion.a
-            href="#contact"
+          <motion.div
             initial={{ opacity: 0, y: 50 }}  // Start from below the screen
             whileInView={{ opacity: 1, y: 0 }} // Move to original position
             transition={{ duration: 1, delay: 1.2 }} // Small delay before this button
             viewport={{ once: true }} // Ensures it triggers only once when in view
-            className="your-button-class"
           >
             <DropdownButton id="dropdown-basic-button" title="More">
-              <Dropdown.Item href="#gallery">Gallery</Dropdown.Item>
-              <Dropdown.Item href="#Blog">Blog</Dropdown.Item>
+              <Dropdown.Item href="#gallery" onClick={checkState}>Gallery</Dropdown.Item>
+              <Dropdown.Item href="#Blog" onClick={checkState}>Blog</Dropdown.Item>
               <Dropdown.Divider />
               {isAuthenticated ? (
-                <Dropdown.Item><Link to="/user/dashboard">Dashboard</Link></Dropdown.Item>
+                <Dropdown.Item onClick={checkState}><Link to="/user/dashboard">Dashboard</Link></Dropdown.Item>
               ) : (
                 <>
-                  <Dropdown.Item><Link to="/signin">Sign in</Link></Dropdown.Item>
-                  <Dropdown.Item><Link to="/signup">Sign up</Link></Dropdown.Item>
-                  <Dropdown.Item><Link to="/admin/signin">Admin Sign In</Link></Dropdown.Item>
+                  <Dropdown.Item onClick={checkState}><Link to="/signin">Sign in</Link></Dropdown.Item>
+                  <Dropdown.Item onClick={checkState}><Link to="/signup">Sign up</Link></Dropdown.Item>
+                  <Dropdown.Item onClick={checkState}><Link to="/admin/signin">Admin Sign In</Link></Dropdown.Item>
                 </>
               )}
             </DropdownButton>
-          </motion.a>
+          </motion.div>
           
           {isAuthenticated && (
             <motion.div

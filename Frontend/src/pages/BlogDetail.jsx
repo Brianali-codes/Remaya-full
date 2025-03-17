@@ -59,7 +59,7 @@ function BlogDetail() {
     return (
         <>
             <Nav2/>
-            <div className="flex flex-col justify-center items-center h-fit bg-white p-5" id="Blog">
+            <div className="flex flex-col justify-center items-center h-fit bg-white" id="Blog">
                 <p className="desc font-bold text-3xl">
                     <p className="desc text-center text-md">
                         <TrueFocus
