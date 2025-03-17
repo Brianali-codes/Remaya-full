@@ -1,4 +1,4 @@
-import { API_URL } from '../config/config';
+import { API_URL, SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 export const updateProfile = async (profileData) => {
   const response = await fetch(`${API_URL}/api/users/profile`, {
@@ -41,6 +41,22 @@ export const fetchUserProfile = async () => {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
+  });
+  return response.json();
+};
+
+export const fetchBlogs = async () => {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
+    headers: supabaseHeaders
+  });
+  return response.json();
+};
+
+export const createBlog = async (blogData) => {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
+    method: 'POST',
+    headers: supabaseHeaders,
+    body: JSON.stringify(blogData)
   });
   return response.json();
 }; 

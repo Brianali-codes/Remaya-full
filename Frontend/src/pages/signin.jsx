@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { supabase } from '../lib/supabaseClient';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const BackButton = styled.button`
   position: fixed;
@@ -46,12 +46,13 @@ const SignIn = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/signin', {
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: supabaseHeaders,
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
       });
 
       const data = await response.json();
@@ -65,7 +66,7 @@ const SignIn = () => {
       localStorage.setItem('userEmail', data.user.email);
       navigate('/user/dashboard');
     } catch (error) {
-      console.error('Error signing in:', error.message);
+      console.error('Error signing in:', error);
       setErrorMessage(error.message);
     } finally {
       setLoading(false);

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { API_URL } from '../config/config';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -20,29 +20,29 @@ const SignUp = () => {
     setErrorMessage(""); // Clear error message on input change
   };
 
-  const handleSubmit = async (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage("");
-
     try {
-      // First, sign up the user
-      const signUpResponse = await fetch(`${API_URL}/api/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: supabaseHeaders,
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
       });
 
-      const data = await signUpResponse.json();
+      const data = await response.json();
 
-      if (!signUpResponse.ok) {
+      if (!response.ok) {
         throw new Error(data.message);
       }
 
       // After successful signup, sign in automatically
-      const signInResponse = await fetch(`${API_URL}/api/signin`, {
+      const signInResponse = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: supabaseHeaders,
         body: JSON.stringify(formData),
       });
 
@@ -57,6 +57,7 @@ const SignUp = () => {
         throw new Error(signInData.message);
       }
     } catch (error) {
+      console.error('Error signing up:', error);
       setErrorMessage(error.message);
     } finally {
       setLoading(false);
@@ -67,7 +68,7 @@ const SignUp = () => {
     <div className='flex flex-col justify-center items-center h-screen' id='signup-bg'>
       <div id='signup-bg1' className='flex flex-col justify-center items-center h-screen'>
         <StyledWrapper>
-          <form className="modern-form" onSubmit={handleSubmit}>
+          <form className="modern-form" onSubmit={handleSignUp}>
             <div className="form-title">Sign Up</div>
             <div className="form-body">
               <div className="input-group">
