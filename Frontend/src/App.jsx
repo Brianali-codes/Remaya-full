@@ -26,6 +26,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import BlogPage from './pages/BlogPage';
 import UserDashboard from './pages/UserDashboard';
 import BlogDetail from './pages/BlogDetail';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 
 function App() {
   return (
@@ -65,7 +66,14 @@ function App() {
         
         {/* Admin Routes */}
         <Route path="/admin/signin" element={<AdminSignIn />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          } 
+        />
 
         {/* User Routes */}
         <Route path="/user/dashboard" element={

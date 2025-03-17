@@ -7,9 +7,10 @@ import { faUser, faBlog, faChartLine, faCog, faUsers, faShieldAlt } from '@forta
 import BlogFormModal from '../components/BlogFormModal';
 import UserRegistrationForm from '../components/UserRegistrationForm';
 import { SUPABASE_URL, supabaseHeaders } from '../config/config';
+import StudentManagement from '../components/StudentManagement';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('blogs');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +52,9 @@ const AdminDashboard = () => {
   };
 
   return (
-    <DashboardContainer>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
       <Tabs
         activeKey={activeTab}
         onSelect={(k) => setActiveTab(k)}
@@ -91,9 +94,14 @@ const AdminDashboard = () => {
             </TabTitle>
           }
         >
-          <ActionButton onClick={() => setIsModalOpen(true)}>
-            Create New Blog
-          </ActionButton>
+          <div className="mb-4">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Create New Blog
+            </button>
+          </div>
           <BlogsList>
             {loading ? (
               <div>Loading blogs...</div>
@@ -119,7 +127,7 @@ const AdminDashboard = () => {
         </Tab>
 
         <Tab 
-          eventKey="users" 
+          eventKey="students" 
           title={
             <TabTitle>
               <FontAwesomeIcon icon={faUsers} />
@@ -127,7 +135,7 @@ const AdminDashboard = () => {
             </TabTitle>
           }
         >
-          <UserRegistrationForm />
+          <StudentManagement />
         </Tab>
 
         <Tab 
@@ -165,7 +173,7 @@ const AdminDashboard = () => {
         setFormData={setFormData}
         isAdmin={true}
       />
-    </DashboardContainer>
+    </div>
   );
 };
 
