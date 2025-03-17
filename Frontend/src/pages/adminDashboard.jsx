@@ -37,17 +37,53 @@ const AdminDashboard = () => {
 
   const fetchBlogs = async () => {
     try {
+      const adminToken = localStorage.getItem('adminToken');
       const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
-        headers: supabaseHeaders
+        headers: {
+          ...supabaseHeaders,
+          'Authorization': `Bearer ${adminToken}`
+        }
       });
       const data = await response.json();
       
-      if (!response.ok) throw new Error(data.message);
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch blogs');
       setBlogs(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching blogs:', error);
       setLoading(false);
+    }
+  };
+
+  const handleDeleteBlog = async (blogId) => {
+    if (!window.confirm('Are you sure you want to delete this blog?')) {
+      return;
+    }
+
+    try {
+      const adminToken = localStorage.getItem('adminToken');
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/blogs?id=eq.${blogId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            ...supabaseHeaders,
+            'Authorization': `Bearer ${adminToken}`,
+            'Prefer': 'return=minimal'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete blog');
+      }
+
+      // Remove blog from state
+      setBlogs(blogs.filter(blog => blog.id !== blogId));
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      alert(error.message || 'Failed to delete blog');
     }
   };
 
@@ -120,6 +156,14 @@ const AdminDashboard = () => {
                       style={{ maxWidth: '200px' }} 
                     />
                   )}
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => handleDeleteBlog(blog.id)}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </BlogCard>
               ))
             )}

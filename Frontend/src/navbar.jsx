@@ -16,6 +16,7 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const navigate = useNavigate();
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
     // Check authentication status when component mounts

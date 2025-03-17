@@ -19,7 +19,11 @@ const StudentManagement = () => {
   const fetchStudents = async () => {
     try {
       const adminToken = localStorage.getItem('adminToken');
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
+      if (!adminToken) {
+        throw new Error('No admin token found');
+      }
+
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/students?select=*`, {
         headers: {
           ...supabaseHeaders,
           'Authorization': `Bearer ${adminToken}`
@@ -27,15 +31,16 @@ const StudentManagement = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch students');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch students');
       }
 
       const data = await response.json();
-      setStudents(Array.isArray(data) ? data : []); // Ensure students is always an array
+      setStudents(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching students:', error);
       setError(error.message);
-      setStudents([]); // Set empty array on error
+      setStudents([]);
     }
   };
 
@@ -46,9 +51,12 @@ const StudentManagement = () => {
 
     try {
       const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('No admin token found');
+      }
+
       const studentId = generateStudentId();
 
-      // Create student record
       const response = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
         method: 'POST',
         headers: {
@@ -60,15 +68,17 @@ const StudentManagement = () => {
           school: formData.school,
           student_id: studentId,
           amount_allocated: formData.amountAllocated,
-          profile_image: null // We'll handle image upload separately
+          profile_image: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create student');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create student');
       }
 
-      // Reset form and refresh list
       setFormData({
         fullName: '',
         school: '',

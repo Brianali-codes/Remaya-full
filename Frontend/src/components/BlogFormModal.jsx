@@ -53,10 +53,14 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
     try {
       const userId = localStorage.getItem('userId');
       const userEmail = localStorage.getItem('userEmail');
+      const adminToken = localStorage.getItem('adminToken');
 
       const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
         method: 'POST',
-        headers: supabaseHeaders,
+        headers: {
+          ...supabaseHeaders,
+          'Authorization': `Bearer ${adminToken}`
+        },
         body: JSON.stringify({
           title: localFormData.title,
           content: localFormData.content,

@@ -23,7 +23,7 @@ const AdminSignIn = () => {
     setErrorMessage("");
 
     try {
-      // First, attempt to sign in
+      // Sign in with Supabase
       const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: "POST",
         headers: supabaseHeaders,
@@ -39,17 +39,22 @@ const AdminSignIn = () => {
         throw new Error(data.error_description || 'Failed to sign in');
       }
 
-      // Check if the user is an admin (assuming admin email is admin@remaya.com)
+      // Check if admin email
       if (formData.email !== 'admin@remaya.com') {
         throw new Error('Unauthorized: Not an admin user');
       }
 
-      // Store admin credentials
-      localStorage.setItem("adminToken", data.access_token);
-      localStorage.setItem("isAdmin", "true");
-      localStorage.setItem("adminEmail", formData.email);
+      // Store admin info
+      if (data.user && data.access_token) {
+        localStorage.setItem("adminToken", data.access_token);
+        localStorage.setItem("userId", data.user.id);
+        localStorage.setItem("userEmail", data.user.email);
+        localStorage.setItem("isAdmin", "true");
+        localStorage.setItem("user", JSON.stringify(data.user));
+      } else {
+        throw new Error("Invalid response from server");
+      }
 
-      // Navigate to admin dashboard
       navigate("/admin/dashboard");
     } catch (error) {
       console.error("Admin sign-in error:", error);
