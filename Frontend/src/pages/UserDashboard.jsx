@@ -7,7 +7,7 @@ import { faArrowLeft, faUser, faBlog, faLock, faCog, faEdit, faTrash, faCamera }
 import { faTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tab, Tabs } from 'react-bootstrap';
-import { updateProfileImage, updateProfile } from '../services/api';
+import { updateProfileImage, updateProfile, uploadProfileImage } from '../services/api';
 import BlogFormModal from '../components/BlogFormModal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -280,30 +280,23 @@ const UserDashboard = () => {
     }
   };
 
-  const handleImageUpload = async (e) => {
+  const handleProfileImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
-      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/users/profile-image', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
-      });
-
-      if (!response.ok) throw new Error('Failed to upload image');
-
-      const data = await response.json();
-      setProfileImage(data.imageUrl);
-      setPreviewUrl(URL.createObjectURL(file));
+      setUploading(true);
+      const imageUrl = await uploadProfileImage(file);
+      
+      // Update profile with new image URL
+      await updateProfile({ profile_image: imageUrl });
+      
+      setUserProfile(prev => ({
+        ...prev,
+        profileImage: imageUrl
+      }));
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error uploading profile image:', error);
       alert('Failed to upload image');
     } finally {
       setUploading(false);
@@ -794,7 +787,7 @@ const UserDashboard = () => {
                         id="profile-upload"
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleProfileImageUpload}
                         style={{ display: 'none' }}
                         disabled={uploading}
                       />

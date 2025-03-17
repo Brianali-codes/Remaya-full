@@ -22,16 +22,68 @@ export const updatePassword = async (passwordData) => {
   return response.json();
 };
 
-export const updateProfileImage = async (imageUrl) => {
-  const response = await fetch(`${API_URL}/api/users/profile-image`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    },
-    body: JSON.stringify({ imageUrl })
-  });
-  return response.json();
+export const uploadProfileImage = async (file) => {
+  try {
+    // Create unique filename
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    
+    // Upload to Supabase Storage
+    const response = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/public/profile-images/${fileName}`,
+      {
+        method: 'POST',
+        headers: {
+          ...supabaseHeaders,
+          'Content-Type': file.type, // Important for file upload
+          'x-upsert': 'true' // Overwrite if exists
+        },
+        body: file
+      }
+    );
+
+    if (!response.ok) throw new Error('Failed to upload image');
+
+    // Return the public URL
+    return `${SUPABASE_URL}/storage/v1/object/public/profile-images/${fileName}`;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+export const uploadBlogImage = async (file) => {
+  try {
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    
+    // First, get upload URL
+    const urlResponse = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/upload/sign/blog-images/${fileName}`,
+      {
+        method: 'POST',
+        headers: supabaseHeaders
+      }
+    );
+
+    if (!urlResponse.ok) throw new Error('Failed to get upload URL');
+    const { signedURL } = await urlResponse.json();
+
+    // Then upload the file
+    const uploadResponse = await fetch(signedURL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type
+      },
+      body: file
+    });
+
+    if (!uploadResponse.ok) throw new Error('Failed to upload image');
+
+    // Return the public URL
+    return `${SUPABASE_URL}/storage/v1/object/public/blog-images/${fileName}`;
+  } catch (error) {
+    console.error('Error uploading blog image:', error);
+    throw error;
+  }
 };
 
 export const fetchUserProfile = async () => {

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import RichTextEditor from './RichTextEditor';
 import { SUPABASE_URL, supabaseHeaders } from '../config/config';
+import { uploadBlogImage } from '../services/api';
 
 const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdmin }) => {
   if (!isOpen) return null;
@@ -24,27 +25,12 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
-      // Create a storage bucket path
-      const fileName = `${Date.now()}-${file.name}`;
-      const response = await fetch(`${SUPABASE_URL}/storage/v1/object/public/blog-images/${fileName}`, {
-        method: 'POST',
-        headers: supabaseHeaders,
-        body: file
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/blog-images/${fileName}`;
+      const imageUrl = await uploadBlogImage(file);
       
       setLocalFormData(prev => ({
         ...prev,
-        imageUrl: imageUrl,
+        imageUrl,
         previewUrl: URL.createObjectURL(file)
       }));
     } catch (error) {
@@ -66,25 +52,25 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
 
     try {
       const userId = localStorage.getItem('userId');
-      const isAdminPost = isAdmin ? true : false;
-
       const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
         method: 'POST',
         headers: supabaseHeaders,
         body: JSON.stringify({
           title: localFormData.title,
           content: localFormData.content,
-          image_url: localFormData.imageUrl,
-          twitter_handle: localFormData.twitterHandle,
-          linkedin_handle: localFormData.linkedinHandle,
+          image_url: localFormData.imageUrl || null,
+          twitter_handle: localFormData.twitterHandle || null,
+          linkedin_handle: localFormData.linkedinHandle || null,
           user_id: userId,
-          is_admin_post: isAdminPost,
-          created_at: new Date().toISOString()
+          is_admin_post: isAdmin || false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error('Failed to create blog');
+        throw new Error(data.error || 'Failed to create blog');
       }
 
       onSubmit(); // Refresh blog list
