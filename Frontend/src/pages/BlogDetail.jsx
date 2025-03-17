@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import Contacts from "../contacts";
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 function BlogDetail() {
     const { id } = useParams();
@@ -19,14 +20,16 @@ function BlogDetail() {
     useEffect(() => {
         const fetchBlog = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/blogs/${id}`);
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs?id=eq.${id}`, {
+                    headers: supabaseHeaders
+                });
                 const data = await response.json();
 
                 if (!response.ok) {
                     throw new Error(data.message);
                 }
 
-                setBlog(data);
+                setBlog(data[0]);
             } catch (error) {
                 console.error('Error:', error);
             } finally {

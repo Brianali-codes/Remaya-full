@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBlog, faChartLine, faCog, faUsers, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import BlogFormModal from '../components/BlogFormModal';
 import UserRegistrationForm from '../components/UserRegistrationForm';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -35,13 +36,11 @@ const AdminDashboard = () => {
 
   const fetchBlogs = async () => {
     try {
-      const adminToken = localStorage.getItem("adminToken");
-      const response = await fetch('http://localhost:5000/api/blogs', {
-        headers: {
-          'Authorization': `Bearer ${adminToken}`
-        }
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
+        headers: supabaseHeaders
       });
       const data = await response.json();
+      
       if (!response.ok) throw new Error(data.message);
       setBlogs(data);
       setLoading(false);

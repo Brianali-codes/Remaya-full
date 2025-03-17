@@ -11,6 +11,7 @@ import { updateProfileImage, updateProfile } from '../services/api';
 import BlogFormModal from '../components/BlogFormModal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const ProfileImageContainer = styled.div`
   position: relative;
@@ -122,28 +123,20 @@ const UserDashboard = () => {
   // Fetch user's blogs
   const fetchUserBlogs = async () => {
     try {
-      const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
-
-      if (!token || !userId) {
-        throw new Error('Authentication required');
-      }
-
-      const response = await fetch(`https://shxplstyxjippikogpwc.supabase.co/api/blogs/user/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs?user_id=eq.${userId}`, {
+        headers: supabaseHeaders
       });
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error('Failed to fetch blogs');
       }
 
-      const data = await response.json();
       setBlogs(data);
     } catch (error) {
       console.error('Error fetching blogs:', error);
-      setError(error.message);
+      setError('Failed to load blogs');
     } finally {
       setLoading(false);
     }
@@ -198,13 +191,13 @@ const UserDashboard = () => {
 
       console.log('Submitting blog with data:', blogData);
 
-      const response = await fetch('https://shxplstyxjippikogpwc.supabase.co/api/blogs', {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(blogData),
+        headers: supabaseHeaders,
+        body: JSON.stringify({
+          ...blogData,
+          user_id: localStorage.getItem('userId')
+        })
       });
 
       const data = await response.json();

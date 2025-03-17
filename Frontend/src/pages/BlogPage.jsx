@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXTwitter, faFacebook, faInstagram, faTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 
 const BlogPage = () => {
   const [blogs, setBlogs] = useState([]);
@@ -21,7 +22,9 @@ const BlogPage = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/blogs/public');
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
+          headers: supabaseHeaders
+        });
         const data = await response.json();
 
         if (!response.ok) {
