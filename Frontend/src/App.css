@@ -339,6 +339,9 @@
 .rb-btn:hover{
   background-color: rgb(67, 64, 255);
 }
+#Blog{
+  padding: 20px !important;
+}
 @media (max-width:768px){
     .custom-navbar{
       height: 10px !important;
