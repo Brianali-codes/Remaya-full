@@ -5,6 +5,29 @@ import { SUPABASE_URL, supabaseHeaders } from '../config/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
+const BackButton = styled.button`
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+`;
+
 const AdminSignIn = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -67,15 +90,11 @@ const AdminSignIn = () => {
   };
 
   return (
-    <div className='flex flex-col justify-center items-center h-screen' id='admin-bg'>
-      <div id='admin-bg1' className='flex flex-col justify-center items-center h-screen'>
-        <Link 
-          to="/" 
-          className="absolute top-4 left-4 text-white hover:text-gray-300 flex items-center gap-2"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-          Back to Home
-        </Link>
+    <div className='flex flex-col justify-center items-center h-screen' id='signup-bg'>
+      <div id='signup-bg1' className='flex flex-col justify-center items-center h-screen'>
+      <BackButton onClick={() => navigate('/')}>
+        <FontAwesomeIcon icon={faArrowLeft} /> Back
+      </BackButton>
 
         <StyledWrapper>
           <form className="modern-form" onSubmit={handleSubmit}>

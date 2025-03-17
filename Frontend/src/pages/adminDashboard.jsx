@@ -62,6 +62,10 @@ const AdminDashboard = () => {
 
     try {
       const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('No admin token found');
+      }
+
       const response = await fetch(
         `${SUPABASE_URL}/rest/v1/blogs?id=eq.${blogId}`,
         {

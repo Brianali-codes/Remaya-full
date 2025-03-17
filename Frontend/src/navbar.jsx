@@ -20,7 +20,7 @@ export default function Navbar() {
 
   useEffect(() => {
     // Check authentication status when component mounts
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
     const email = localStorage.getItem('userEmail');
     if (token && email) {
       setIsAuthenticated(true);
@@ -29,9 +29,13 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
+    // Clear all auth tokens
     localStorage.removeItem('token');
+    localStorage.removeItem('adminToken');
     localStorage.removeItem('userId');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUserEmail('');
     navigate('/signin');
