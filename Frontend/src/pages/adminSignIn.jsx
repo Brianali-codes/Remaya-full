@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { SUPABASE_URL, supabaseHeaders } from '../config/config';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const AdminSignIn = () => {
   const [formData, setFormData] = useState({
@@ -67,6 +69,14 @@ const AdminSignIn = () => {
   return (
     <div className='flex flex-col justify-center items-center h-screen' id='admin-bg'>
       <div id='admin-bg1' className='flex flex-col justify-center items-center h-screen'>
+        <Link 
+          to="/" 
+          className="absolute top-4 left-4 text-white hover:text-gray-300 flex items-center gap-2"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} />
+          Back to Home
+        </Link>
+
         <StyledWrapper>
           <form className="modern-form" onSubmit={handleSubmit}>
             <div className="form-title">Admin Sign In</div>
