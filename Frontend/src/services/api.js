@@ -26,33 +26,26 @@ export const uploadProfileImage = async (file) => {
   try {
     const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
     
-    // First, get upload URL
-    const urlResponse = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/upload/sign/profile-images/${fileName}`,
+    const response = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/profile-images/${fileName}`,
       {
         method: 'POST',
-        headers: supabaseHeaders
+        headers: {
+          ...supabaseHeaders,
+          'Content-Type': file.type,
+        },
+        body: file
       }
     );
 
-    if (!urlResponse.ok) throw new Error('Failed to get upload URL');
-    const { signedURL } = await urlResponse.json();
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to upload image');
+    }
 
-    // Then upload the file
-    const uploadResponse = await fetch(signedURL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': file.type
-      },
-      body: file
-    });
-
-    if (!uploadResponse.ok) throw new Error('Failed to upload image');
-
-    // Return the public URL
     return `${SUPABASE_URL}/storage/v1/object/public/profile-images/${fileName}`;
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('Error uploading profile image:', error);
     throw error;
   }
 };
@@ -61,30 +54,23 @@ export const uploadBlogImage = async (file) => {
   try {
     const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
     
-    // First, get upload URL
-    const urlResponse = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/upload/sign/blog-images/${fileName}`,
+    const response = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/blog-images/${fileName}`,
       {
         method: 'POST',
-        headers: supabaseHeaders
+        headers: {
+          ...supabaseHeaders,
+          'Content-Type': file.type,
+        },
+        body: file
       }
     );
 
-    if (!urlResponse.ok) throw new Error('Failed to get upload URL');
-    const { signedURL } = await urlResponse.json();
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to upload image');
+    }
 
-    // Then upload the file
-    const uploadResponse = await fetch(signedURL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': file.type
-      },
-      body: file
-    });
-
-    if (!uploadResponse.ok) throw new Error('Failed to upload image');
-
-    // Return the public URL
     return `${SUPABASE_URL}/storage/v1/object/public/blog-images/${fileName}`;
   } catch (error) {
     console.error('Error uploading blog image:', error);

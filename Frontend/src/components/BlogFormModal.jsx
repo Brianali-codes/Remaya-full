@@ -52,6 +52,8 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
 
     try {
       const userId = localStorage.getItem('userId');
+      const userEmail = localStorage.getItem('userEmail');
+
       const response = await fetch(`${SUPABASE_URL}/rest/v1/blogs`, {
         method: 'POST',
         headers: supabaseHeaders,
@@ -62,18 +64,19 @@ const BlogFormModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isAdm
           twitter_handle: localFormData.twitterHandle || null,
           linkedin_handle: localFormData.linkedinHandle || null,
           user_id: userId,
+          user_email: userEmail,
           is_admin_post: isAdmin || false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
       });
 
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create blog');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create blog');
       }
 
-      onSubmit(); // Refresh blog list
+      onSubmit();
       onClose();
       setLocalFormData({
         title: '',
