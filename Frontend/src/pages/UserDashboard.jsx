@@ -7,7 +7,7 @@ import { faArrowLeft, faUser, faBlog, faLock, faCog, faEdit, faTrash, faCamera }
 import { faTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tab, Tabs } from 'react-bootstrap';
-import { updateProfileImage, updateProfile, uploadProfileImage } from '../services/api';
+import { updateProfile, uploadProfileImage } from '../services/api';
 import BlogFormModal from '../components/BlogFormModal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';

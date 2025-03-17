@@ -19,26 +19,15 @@ const RichTextEditor = ({ value, onChange }) => {
   };
 
   return (
-    <div className="rich-text-editor">
-      <ReactQuill
-        theme="snow"
-        value={value || ''}
-        onChange={onChange}
-        modules={modules}
-        preserveWhitespace={true}
-        style={{ height: '300px', marginBottom: '50px' }}
-      />
-      <style jsx>{`
-        .rich-text-editor {
-          margin-bottom: 3rem;
-        }
-        .ql-editor {
-          min-height: 200px;
-          font-size: 16px;
-        }
-      `}</style>
-    </div>
+    <ReactQuill
+      theme="snow"
+      value={value || ''}
+      onChange={onChange}
+      modules={modules}
+      preserveWhitespace={true}
+      style={{ height: '300px', marginBottom: '50px' }}
+    />
   );
 };
 
-export default RichTextEditor; 
+export default RichTextEditor;

@@ -24,24 +24,30 @@ export const updatePassword = async (passwordData) => {
 
 export const uploadProfileImage = async (file) => {
   try {
-    // Create unique filename
     const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
     
-    // Upload to Supabase Storage
-    const response = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/public/profile-images/${fileName}`,
+    // First, get upload URL
+    const urlResponse = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/upload/sign/profile-images/${fileName}`,
       {
         method: 'POST',
-        headers: {
-          ...supabaseHeaders,
-          'Content-Type': file.type, // Important for file upload
-          'x-upsert': 'true' // Overwrite if exists
-        },
-        body: file
+        headers: supabaseHeaders
       }
     );
 
-    if (!response.ok) throw new Error('Failed to upload image');
+    if (!urlResponse.ok) throw new Error('Failed to get upload URL');
+    const { signedURL } = await urlResponse.json();
+
+    // Then upload the file
+    const uploadResponse = await fetch(signedURL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type
+      },
+      body: file
+    });
+
+    if (!uploadResponse.ok) throw new Error('Failed to upload image');
 
     // Return the public URL
     return `${SUPABASE_URL}/storage/v1/object/public/profile-images/${fileName}`;
